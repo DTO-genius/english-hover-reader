@@ -1,0 +1,171 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 390px;
+  min-height: 500px;
+  margin: 0;
+  color: #18231e;
+  background: #fffdf8;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+}
+
+header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #e8e0d2;
+}
+
+h1 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+p {
+  margin: 0;
+}
+
+#summary {
+  margin-top: 5px;
+  color: #647068;
+}
+
+button {
+  font: inherit;
+}
+
+#clearButton {
+  min-width: 52px;
+  padding: 6px 9px;
+  color: #8f2e2e;
+  background: #fff3ef;
+  border: 1px solid #efc7bd;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#clearButton:hover {
+  background: #ffe9e1;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e8e0d2;
+}
+
+.tabs button {
+  height: 34px;
+  color: #314039;
+  background: #f4efe6;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  color: #ffffff;
+  background: #1f6f56;
+}
+
+main {
+  max-height: 405px;
+  overflow: auto;
+  padding: 12px 16px 16px;
+}
+
+.empty {
+  display: grid;
+  min-height: 250px;
+  place-items: center;
+  color: #647068;
+  text-align: center;
+}
+
+.group + .group {
+  margin-top: 16px;
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #6f604d;
+  font-size: 12px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.word-list {
+  display: grid;
+  gap: 8px;
+}
+
+.word-card {
+  padding: 10px;
+  background: #ffffff;
+  border: 1px solid #e5ddce;
+  border-radius: 8px;
+}
+
+.word-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.word {
+  color: #102018;
+  font-size: 16px;
+  font-weight: 760;
+}
+
+.ipa {
+  margin-left: 6px;
+  color: #758078;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.count {
+  flex: 0 0 auto;
+  padding: 3px 7px;
+  color: #ffffff;
+  background: #1f6f56;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.zh {
+  margin-top: 6px;
+  color: #27352f;
+  font-weight: 650;
+}
+
+.definition,
+.example,
+.meta {
+  margin-top: 5px;
+  color: #5e6a63;
+  line-height: 1.4;
+}
+
+.example {
+  color: #496255;
+}
+
+.confusable {
+  margin-top: 6px;
+  color: #8a5a1f;
+}

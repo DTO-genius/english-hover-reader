@@ -1,0 +1,139 @@
+.ehr-card {
+  position: fixed;
+  z-index: 2147483647;
+  display: none;
+  box-sizing: border-box;
+  width: 340px;
+  max-width: calc(100vw - 20px);
+  padding: 12px;
+  color: #17211c;
+  background: #fffdf7;
+  border: 1px solid rgba(23, 33, 28, 0.16);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(24, 31, 27, 0.22);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ehr-card *,
+.ehr-card *::before,
+.ehr-card *::after {
+  box-sizing: border-box;
+}
+
+.ehr-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ehr-head strong {
+  display: block;
+  color: #102018;
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.ehr-head span {
+  display: block;
+  margin-top: 3px;
+  color: #5f6a63;
+  font-size: 12px;
+}
+
+.ehr-audio {
+  display: inline-grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: #ffffff;
+  background: #1f6f56;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.ehr-audio:hover {
+  background: #185744;
+}
+
+.ehr-meaning {
+  margin: 8px 0;
+  padding: 8px 10px;
+  color: #102018;
+  background: #eef7e8;
+  border: 1px solid rgba(69, 125, 86, 0.18);
+  border-radius: 6px;
+  font-weight: 650;
+}
+
+.ehr-section {
+  margin-top: 8px;
+}
+
+.ehr-section span {
+  display: block;
+  margin-bottom: 2px;
+  color: #7a6750;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ehr-section p {
+  margin: 0;
+  color: #26342e;
+}
+
+.ehr-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+  color: #5f6a63;
+  font-size: 12px;
+}
+
+.ehr-foot span {
+  padding: 3px 6px;
+  background: #f4efe6;
+  border-radius: 999px;
+}
+
+.ehr-error {
+  color: #9d2f2f;
+}
+
+.ehr-loading {
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  background: #ece5d8;
+  border-radius: 999px;
+}
+
+.ehr-loading::before {
+  display: block;
+  width: 38%;
+  height: 100%;
+  background: #1f6f56;
+  border-radius: inherit;
+  animation: ehr-loading 900ms ease-in-out infinite;
+  content: "";
+}
+
+@keyframes ehr-loading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}

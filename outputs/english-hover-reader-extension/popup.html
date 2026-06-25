@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>English Hover Reader</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>单词本</h1>
+        <p id="summary">读取中...</p>
+      </div>
+      <button id="clearButton" type="button" title="清空单词本">清空</button>
+    </header>
+
+    <nav class="tabs" aria-label="单词本分类">
+      <button class="active" type="button" data-mode="frequency">频率</button>
+      <button type="button" data-mode="confusable">形似易混</button>
+    </nav>
+
+    <main id="wordBook"></main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
