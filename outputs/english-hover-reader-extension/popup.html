@@ -9,19 +9,31 @@
   <body>
     <header>
       <div>
-        <h1>单词本</h1>
-        <p id="summary">读取中...</p>
+        <h1>&#33521;&#35821;&#38405;&#35835;&#21161;&#25163;</h1>
+        <p id="summary">&#35835;&#21462;&#20013;...</p>
       </div>
-      <button id="clearButton" type="button" title="清空单词本">清空</button>
+      <button id="libraryButton" type="button" title="&#25171;&#24320;&#23436;&#25972;&#39029;">&#20840;&#37096;</button>
     </header>
 
-    <nav class="tabs" aria-label="单词本分类">
-      <button class="active" type="button" data-mode="frequency">频率</button>
-      <button type="button" data-mode="confusable">形似易混</button>
+    <form id="lookupForm" class="lookup-form">
+      <input id="lookupInput" type="text" autocomplete="off" spellcheck="false" placeholder="&#36755;&#20837;&#26080;&#27861;&#36873;&#20013;&#30340;&#21333;&#35789;">
+      <button type="submit">&#26597;&#35789;</button>
+    </form>
+
+    <nav class="tabs" aria-label="&#23398;&#20064;&#26412;&#20998;&#31867;">
+      <button class="active" type="button" data-mode="frequency">&#39057;&#29575;</button>
+      <button type="button" data-mode="confusable">&#26131;&#28151;</button>
+      <button type="button" data-mode="sentences">&#25688;&#25220;</button>
     </nav>
 
     <main id="wordBook"></main>
 
+    <footer>
+      <button id="exportButton" type="button">&#23548;&#20986; Word</button>
+      <button id="clearButton" type="button">&#28165;&#31354;&#20840;&#37096;</button>
+    </footer>
+
+    <script src="exporter.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

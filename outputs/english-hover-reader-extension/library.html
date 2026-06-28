@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>English Hover Reader Library</title>
+    <link rel="stylesheet" href="library.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>&#23398;&#20064;&#24211;</h1>
+        <p id="summary">&#35835;&#21462;&#20013;...</p>
+      </div>
+      <div class="actions">
+        <button id="exportButton" type="button">&#23548;&#20986; Word</button>
+        <button id="refreshButton" type="button">&#21047;&#26032;</button>
+      </div>
+    </header>
+
+    <section class="tools">
+      <form id="lookupForm" class="lookup-form">
+        <input id="lookupInput" type="text" autocomplete="off" spellcheck="false" placeholder="&#25163;&#21160;&#26597;&#21333;&#35789;">
+        <button type="submit">&#26597;&#35789;</button>
+      </form>
+      <input id="filterInput" type="search" placeholder="&#25628;&#32034;&#21333;&#35789;&#25110;&#21477;&#23376;">
+    </section>
+
+    <main>
+      <section class="panel" id="wordsPanel">
+        <div class="panel-head">
+          <h2>&#21333;&#35789;&#26412;</h2>
+          <span id="wordsCount">0</span>
+        </div>
+        <div id="wordsList"></div>
+      </section>
+
+      <section class="panel" id="confusablePanel">
+        <div class="panel-head">
+          <h2>&#24418;&#20284;&#26131;&#28151;</h2>
+          <span id="confusableCount">0</span>
+        </div>
+        <div id="confusableList"></div>
+      </section>
+
+      <section class="panel" id="sentencesPanel">
+        <div class="panel-head">
+          <h2>&#25688;&#25220;&#26412;</h2>
+          <span id="sentencesCount">0</span>
+        </div>
+        <div id="sentencesList"></div>
+      </section>
+    </main>
+
+    <script src="exporter.js"></script>
+    <script src="library.js"></script>
+  </body>
+</html>

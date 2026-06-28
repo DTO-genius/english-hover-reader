@@ -1,41 +1,42 @@
 # English Hover Reader
 
-一个 Chrome Manifest V3 英文阅读辅助插件。左键拖选英文单词后右键触发查询，会以浮窗显示音标、中文释义、简明英英解释、简单例句、发音按钮，并在后台自动统计查询次数，生成单词本。
+Chrome Manifest V3 English reading assistant. Select an English word or sentence, then right-click the selected text to trigger the extension.
 
-## 功能
+## Features
 
-- 左键拖选英文单词，让单词处于蓝色选中状态后，右键触发查词。
-- 浮窗显示 IPA、中文释义、简明英语解释、简单例句。
-- 点击发音按钮播放词典音频；没有音频时使用浏览器英语朗读兜底。
-- 后台用 `chrome.storage.local` 缓存查词结果并统计查询次数。
-- 工具栏弹窗提供两种单词本视图：
-  - 频率分类：高频、中频、低频。
-  - 形似易混：内置常见易混词组，并自动聚合拼写相近的已查词。
+- Select one English word and right-click to show IPA, Chinese meaning, English definition, example, source note, and audio.
+- Select an English sentence or paragraph and right-click to translate it.
+- Sentence translation is not saved automatically. Use the save button in the floating card to add it to the excerpt book.
+- Manual word lookup is available in the popup and the full library page. Manual lookup is recorded in the word book.
+- Word book supports frequency grouping and confusable-word grouping.
+- Confusable groups are generated only when at least two related words have been collected.
+- Words and collected sentences can be deleted one by one.
+- A full library page shows all words, confusable groups, and collected sentences.
+- Export the word book and excerpt book as a Word-compatible `.doc` file.
 
-## 安装
+## Install
 
-1. 打开 Chrome，进入 `chrome://extensions/`。
-2. 打开右上角“开发者模式”。
-3. 点击“加载已解压的扩展程序”。
-4. 选择本目录：`english-hover-reader-extension`。
+1. Open `chrome://extensions/`.
+2. Turn on Developer mode.
+3. Click "Load unpacked".
+4. Select this folder: `english-hover-reader-extension`.
 
-## 使用
+## Use
 
-- 打开任意英文网页，用鼠标左键拖过英文单词，让它变成蓝色选中状态。
-- 在选中的单词上按鼠标右键，插件会弹出查词浮窗。
-- 在浮窗中点击播放按钮可以听发音。
-- 点击浏览器工具栏中的扩展图标，可以查看自动生成的单词本。
+- Word lookup: select a single English word, then right-click it.
+- Sentence translation: select an English sentence, then right-click it.
+- Save sentence: click the save button in the translation card.
+- Manual lookup: click the extension icon and type a word into the search box.
+- Full library: click "全部" in the popup, or open the extension options page.
+- Export: click "导出 Word" in the popup or full library page.
 
-## 如果右键没有反应
+## Source Notes
 
-- 安装或更新扩展后，先刷新已经打开的网页。
-- 不要在 `chrome://`、Chrome 网上应用店、扩展管理页上测试；这些页面不允许普通扩展注入内容脚本。
-- 如果要在本地 `file://` 页面测试，请在扩展详情页打开“允许访问文件网址”。
-- 可以打开本目录的 `test-page.html` 做快速测试。
+Oxford and Longman are preferred authoritative dictionary sources, but this build does not include licensed API keys. It avoids scraping their pages. The current runnable version uses `api.dictionaryapi.dev`, Youdao suggest, and MyMemory translation as free fallbacks. The background data model keeps source fields so an authorized Oxford/Longman API connector can be added later.
 
-## 数据与联网说明
+## Troubleshooting
 
-- 查询次数、缓存和单词本保存在本机 Chrome 的扩展本地存储中。
-- 英英释义、音标和部分音频来自 `api.dictionaryapi.dev`。
-- 中文释义优先使用内置小词库，不足时尝试从有道建议接口补充。
-- 如果网络不可用，插件仍会记录查询，并显示可用的兜底释义和朗读。
+- Refresh existing pages after reloading or updating the extension.
+- Do not test on `chrome://` pages, the Chrome Web Store, or the extension management page; Chrome blocks normal content-script injection there.
+- To test on local `file://` pages, enable "Allow access to file URLs" on the extension details page.
+- Use `test-page.html` for a quick local test.

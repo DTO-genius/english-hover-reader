@@ -1,11 +1,9 @@
-const LOOKUP_DELAY_MS = 320;
+const LOOKUP_DELAY_MS = 260;
 const WORD_PATTERN = /^[A-Za-z][A-Za-z'-]{1,34}$/;
 
-let hoverTimer = 0;
-let activeWord = "";
-let activeRangeKey = "";
+let actionTimer = 0;
+let activeKey = "";
 let card = null;
-let lastLookupAt = 0;
 
 document.addEventListener("contextmenu", handleContextMenu, true);
 document.addEventListener("scroll", hideCard, { passive: true });
@@ -16,45 +14,50 @@ document.addEventListener("keydown", (event) => {
 function handleContextMenu(event) {
   if (card?.contains(event.target) || isIgnoredElement(event.target)) return;
 
-  const hit = getSelectedWordHit();
-  if (!hit || !WORD_PATTERN.test(hit.word)) {
+  const hit = getSelectedTextHit();
+  if (!hit) {
     hideCard();
     return;
   }
 
-  const word = hit.word.toLowerCase();
-  const rangeKey = `${word}:${Math.round(hit.rect.left)}:${Math.round(hit.rect.top)}`;
-  const now = Date.now();
-  if (word === activeWord && rangeKey === activeRangeKey && now - lastLookupAt < 800) {
-    event.preventDefault();
+  const word = getSingleSelectedWord(hit.text);
+  const key = word ? `word:${word}` : `sentence:${hit.text}`;
+
+  event.preventDefault();
+  window.clearTimeout(actionTimer);
+  activeKey = key;
+
+  if (word) {
+    showLoadingCard(hit.rect, word, "\u67e5\u8bcd\u4e2d...");
+    actionTimer = window.setTimeout(() => lookupWord(word, hit.rect), LOOKUP_DELAY_MS);
     return;
   }
 
-  event.preventDefault();
-  window.clearTimeout(hoverTimer);
-  activeWord = word;
-  activeRangeKey = rangeKey;
-  lastLookupAt = now;
-  showLoadingCard(hit.rect, word);
-  hoverTimer = window.setTimeout(() => lookupWord(word, hit.rect), LOOKUP_DELAY_MS);
+  showLoadingCard(hit.rect, "\u53e5\u5b50\u7ffb\u8bd1", "\u7ffb\u8bd1\u4e2d...");
+  actionTimer = window.setTimeout(() => translateSentence(hit.text, hit.rect), LOOKUP_DELAY_MS);
 }
 
-function getSelectedWordHit() {
+function getSelectedTextHit() {
   const selection = window.getSelection();
   if (!selection || selection.isCollapsed || selection.rangeCount === 0) return null;
 
-  const selectedText = selection.toString().trim();
-  const wordMatch = selectedText.match(/[A-Za-z][A-Za-z'-]{1,34}/);
-  if (!wordMatch) return null;
-
-  const word = wordMatch[0].replace(/^'+|'+$/g, "");
-  if (!word) return null;
+  const text = selection.toString().replace(/\s+/g, " ").trim();
+  if (!text || !/[A-Za-z]/.test(text)) return null;
 
   const range = selection.getRangeAt(0);
   const rect = getSelectionRect(range);
   if (!rect.width || !rect.height) return null;
 
-  return { word, rect };
+  return { text, rect };
+}
+
+function getSingleSelectedWord(text) {
+  const normalized = String(text || "")
+    .trim()
+    .replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, "");
+
+  if (!normalized || /\s/.test(normalized)) return "";
+  return WORD_PATTERN.test(normalized) ? normalized.toLowerCase() : "";
 }
 
 function getSelectionRect(range) {
@@ -62,138 +65,31 @@ function getSelectionRect(range) {
   return rects[0] || range.getBoundingClientRect();
 }
 
-function getWordAtPoint(x, y) {
-  const range = getCaretRangeFromPoint(x, y);
-  const caretHit = getWordFromRange(range, x, y);
-  if (caretHit) return caretHit;
-
-  return getWordFromElementAtPoint(x, y);
-}
-
-function getWordFromRange(range, x, y) {
-  if (!range?.startContainer || range.startContainer.nodeType !== Node.TEXT_NODE) return null;
-
-  const textNode = range.startContainer;
-  const text = textNode.textContent || "";
-  const offset = Math.min(range.startOffset, Math.max(text.length - 1, 0));
-  const bounds = expandWordBounds(text, offset);
-  if (!bounds) return null;
-
-  const rect = getRangeRect(textNode, bounds.start, bounds.end, x, y);
-  const word = text.slice(bounds.start, bounds.end);
-
-  if (!rect.width || !rect.height) return null;
-  return { word, rect };
-}
-
-function getWordFromElementAtPoint(x, y) {
-  const element = document.elementFromPoint(x, y);
-  if (!element || isIgnoredElement(element)) return null;
-
-  const root = element.shadowRoot || element;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      if (!node.textContent || !/[A-Za-z]/.test(node.textContent)) return NodeFilter.FILTER_REJECT;
-      const parent = node.parentElement;
-      if (!parent || isIgnoredElement(parent)) return NodeFilter.FILTER_REJECT;
-      const style = window.getComputedStyle(parent);
-      if (style.visibility === "hidden" || style.display === "none") return NodeFilter.FILTER_REJECT;
-      return NodeFilter.FILTER_ACCEPT;
-    }
-  });
-
-  let node = walker.nextNode();
-  let scanned = 0;
-  while (node && scanned < 120) {
-    const hit = findWordInTextNode(node, x, y);
-    if (hit) return hit;
-    node = walker.nextNode();
-    scanned += 1;
-  }
-
-  return null;
-}
-
-function findWordInTextNode(textNode, x, y) {
-  const text = textNode.textContent || "";
-  const matcher = /[A-Za-z][A-Za-z'-]{1,34}/g;
-  let match = matcher.exec(text);
-
-  while (match) {
-    const start = match.index;
-    const end = start + match[0].length;
-    const rect = getRangeRect(textNode, start, end, x, y);
-    if (pointInsideRect(x, y, rect)) {
-      return { word: match[0], rect };
-    }
-    match = matcher.exec(text);
-  }
-
-  return null;
-}
-
-function getRangeRect(textNode, start, end, x, y) {
-  const wordRange = document.createRange();
-  wordRange.setStart(textNode, start);
-  wordRange.setEnd(textNode, end);
-
-  const rects = Array.from(wordRange.getClientRects());
-  const rect = rects.find((item) => pointInsideRect(x, y, item)) || wordRange.getBoundingClientRect();
-  wordRange.detach();
-  return rect;
-}
-
-function pointInsideRect(x, y, rect) {
-  if (!rect || !rect.width || !rect.height) return false;
-  const padding = 2;
-  return x >= rect.left - padding && x <= rect.right + padding && y >= rect.top - padding && y <= rect.bottom + padding;
-}
-
-function isIgnoredElement(target) {
-  const element = target?.nodeType === Node.ELEMENT_NODE ? target : target?.parentElement;
-  if (!element) return false;
-  return Boolean(element.closest("input, textarea, select, button, code, pre, [contenteditable='true'], .ehr-card"));
-}
-
-function getCaretRangeFromPoint(x, y) {
-  if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
-  const position = document.caretPositionFromPoint?.(x, y);
-  if (!position) return null;
-  const range = document.createRange();
-  range.setStart(position.offsetNode, position.offset);
-  range.collapse(true);
-  return range;
-}
-
-function expandWordBounds(text, offset) {
-  if (!text) return null;
-
-  let index = offset;
-  if (!/[A-Za-z'-]/.test(text[index] || "") && /[A-Za-z'-]/.test(text[index - 1] || "")) {
-    index -= 1;
-  }
-  if (!/[A-Za-z'-]/.test(text[index] || "")) return null;
-
-  let start = index;
-  let end = index + 1;
-  while (start > 0 && /[A-Za-z'-]/.test(text[start - 1])) start -= 1;
-  while (end < text.length && /[A-Za-z'-]/.test(text[end])) end += 1;
-
-  const rawWord = text.slice(start, end).replace(/^'+|'+$/g, "");
-  if (!rawWord || rawWord.length < 2) return null;
-  return { start, end };
-}
-
 async function lookupWord(word, rect) {
   try {
     const response = await chrome.runtime.sendMessage({ type: "LOOKUP_WORD", word });
+    if (activeKey !== `word:${word}`) return;
     if (!response?.ok) {
       renderError(rect, word, response?.error || "Lookup failed.");
       return;
     }
-    renderEntry(rect, response.entry);
+    renderWordEntry(rect, response.entry);
   } catch (error) {
     renderError(rect, word, error.message || "Lookup failed.");
+  }
+}
+
+async function translateSentence(text, rect) {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: "TRANSLATE_SENTENCE", text });
+    if (activeKey !== `sentence:${text}`) return;
+    if (!response?.ok) {
+      renderError(rect, "\u53e5\u5b50\u7ffb\u8bd1", response?.error || "Translation failed.");
+      return;
+    }
+    renderSentenceEntry(rect, response.entry);
+  } catch (error) {
+    renderError(rect, "\u53e5\u5b50\u7ffb\u8bd1", error.message || "Translation failed.");
   }
 }
 
@@ -202,33 +98,33 @@ function ensureCard() {
 
   card = document.createElement("section");
   card.className = "ehr-card";
-  card.addEventListener("mouseenter", () => window.clearTimeout(hoverTimer));
+  card.addEventListener("mouseenter", () => window.clearTimeout(actionTimer));
   card.addEventListener("mouseleave", scheduleHide);
   document.documentElement.appendChild(card);
   return card;
 }
 
-function showLoadingCard(rect, word) {
+function showLoadingCard(rect, title, subtitle) {
   const node = ensureCard();
   node.innerHTML = `
     <div class="ehr-head">
-      <strong>${escapeHtml(word)}</strong>
-      <span>查词中...</span>
+      <strong>${escapeHtml(title)}</strong>
+      <span>${escapeHtml(subtitle)}</span>
     </div>
     <div class="ehr-loading"></div>
   `;
   positionCard(node, rect);
 }
 
-function renderEntry(rect, entry) {
+function renderWordEntry(rect, entry) {
   const node = ensureCard();
   node.innerHTML = `
     <div class="ehr-head">
       <div>
         <strong>${escapeHtml(entry.word)}</strong>
-        <span>${escapeHtml(entry.phonetic || "IPA 暂无")}</span>
+        <span>${escapeHtml(entry.phonetic || "IPA unavailable")}</span>
       </div>
-      <button class="ehr-audio" type="button" title="播放标准发音" aria-label="播放标准发音">▶</button>
+      <button class="ehr-audio" type="button" title="\u64ad\u653e\u6807\u51c6\u53d1\u97f3" aria-label="\u64ad\u653e\u6807\u51c6\u53d1\u97f3">▶</button>
     </div>
     <div class="ehr-meaning">${escapeHtml(entry.chinese)}</div>
     <div class="ehr-section">
@@ -240,8 +136,8 @@ function renderEntry(rect, entry) {
       <p>${escapeHtml(entry.example)}</p>
     </div>
     <div class="ehr-foot">
-      <span>已查 ${Number(entry.count || 1)} 次</span>
-      ${entry.confusables?.length ? `<span>易混: ${escapeHtml(entry.confusables.join(", "))}</span>` : ""}
+      <span>\u6765\u6e90: ${escapeHtml(entry.source || "fallback")}</span>
+      <span>\u67e5\u8fc7 ${Number(entry.count || 1)} \u6b21</span>
     </div>
   `;
 
@@ -249,12 +145,50 @@ function renderEntry(rect, entry) {
   positionCard(node, rect);
 }
 
-function renderError(rect, word, message) {
+function renderSentenceEntry(rect, entry) {
   const node = ensureCard();
   node.innerHTML = `
     <div class="ehr-head">
-      <strong>${escapeHtml(word)}</strong>
-      <span>查词失败</span>
+      <div>
+        <strong>\u53e5\u5b50\u7ffb\u8bd1</strong>
+        <span>${escapeHtml(entry.source || "translation fallback")}</span>
+      </div>
+    </div>
+    <div class="ehr-section">
+      <span>Original</span>
+      <p class="ehr-sentence">${escapeHtml(entry.text)}</p>
+    </div>
+    <div class="ehr-meaning ehr-translation">${escapeHtml(entry.translation)}</div>
+    <div class="ehr-actions">
+      <button class="ehr-save" type="button">\u6536\u85cf\u53e5\u5b50</button>
+    </div>
+  `;
+
+  node.querySelector(".ehr-save").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    button.textContent = "\u4fdd\u5b58\u4e2d...";
+    const response = await chrome.runtime.sendMessage({
+      type: "SAVE_SENTENCE",
+      entry: {
+        ...entry,
+        pageTitle: document.title,
+        pageUrl: location.href
+      }
+    });
+    button.textContent = response?.ok ? "\u5df2\u6536\u85cf" : "\u6536\u85cf\u5931\u8d25";
+    if (!response?.ok) button.disabled = false;
+  });
+
+  positionCard(node, rect);
+}
+
+function renderError(rect, title, message) {
+  const node = ensureCard();
+  node.innerHTML = `
+    <div class="ehr-head">
+      <strong>${escapeHtml(title)}</strong>
+      <span>\u5931\u8d25</span>
     </div>
     <div class="ehr-error">${escapeHtml(message)}</div>
   `;
@@ -263,7 +197,7 @@ function renderError(rect, word, message) {
 
 function positionCard(node, rect) {
   const margin = 10;
-  const width = Math.min(340, window.innerWidth - margin * 2);
+  const width = Math.min(360, window.innerWidth - margin * 2);
   node.style.width = `${width}px`;
   node.style.display = "block";
 
@@ -298,14 +232,19 @@ function speak(word) {
 }
 
 function scheduleHide() {
-  window.clearTimeout(hoverTimer);
-  hoverTimer = window.setTimeout(hideCard, 180);
+  window.clearTimeout(actionTimer);
+  actionTimer = window.setTimeout(hideCard, 180);
 }
 
 function hideCard() {
-  activeWord = "";
-  activeRangeKey = "";
+  activeKey = "";
   if (card) card.style.display = "none";
+}
+
+function isIgnoredElement(target) {
+  const element = target?.nodeType === Node.ELEMENT_NODE ? target : target?.parentElement;
+  if (!element) return false;
+  return Boolean(element.closest("input, textarea, select, button, code, pre, [contenteditable='true'], .ehr-card"));
 }
 
 function escapeHtml(value) {

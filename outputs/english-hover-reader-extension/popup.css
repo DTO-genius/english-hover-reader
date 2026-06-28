@@ -3,8 +3,8 @@
 }
 
 body {
-  width: 390px;
-  min-height: 500px;
+  width: 410px;
+  min-height: 540px;
   margin: 0;
   color: #18231e;
   background: #fffdf8;
@@ -32,32 +32,68 @@ p {
   margin: 0;
 }
 
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
 #summary {
   margin-top: 5px;
   color: #647068;
 }
 
-button {
-  font: inherit;
-}
-
-#clearButton {
-  min-width: 52px;
-  padding: 6px 9px;
-  color: #8f2e2e;
-  background: #fff3ef;
-  border: 1px solid #efc7bd;
+#libraryButton,
+footer button,
+.lookup-form button,
+.delete-button {
   border-radius: 6px;
-  cursor: pointer;
 }
 
-#clearButton:hover {
-  background: #ffe9e1;
+#libraryButton {
+  min-width: 58px;
+  height: 32px;
+  color: #ffffff;
+  background: #1f6f56;
+  border: 0;
+}
+
+.lookup-form {
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  gap: 8px;
+  padding: 12px 16px 0;
+}
+
+.lookup-form input {
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  color: #17211c;
+  background: #ffffff;
+  border: 1px solid #d8d0c2;
+  border-radius: 6px;
+  outline: none;
+}
+
+.lookup-form input:focus {
+  border-color: #1f6f56;
+}
+
+.lookup-form button,
+footer button {
+  height: 34px;
+  color: #ffffff;
+  background: #1f6f56;
+  border: 0;
 }
 
 .tabs {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   padding: 12px 16px;
   border-bottom: 1px solid #e8e0d2;
@@ -69,7 +105,6 @@ button {
   background: #f4efe6;
   border: 1px solid transparent;
   border-radius: 6px;
-  cursor: pointer;
 }
 
 .tabs button.active {
@@ -78,14 +113,28 @@ button {
 }
 
 main {
-  max-height: 405px;
+  max-height: 360px;
   overflow: auto;
   padding: 12px 16px 16px;
 }
 
+footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #e8e0d2;
+}
+
+#clearButton {
+  color: #8f2e2e;
+  background: #fff3ef;
+  border: 1px solid #efc7bd;
+}
+
 .empty {
   display: grid;
-  min-height: 250px;
+  min-height: 220px;
   place-items: center;
   color: #647068;
   text-align: center;
@@ -106,19 +155,19 @@ main {
   text-transform: uppercase;
 }
 
-.word-list {
+.item-list {
   display: grid;
   gap: 8px;
 }
 
-.word-card {
+.item-card {
   padding: 10px;
   background: #ffffff;
   border: 1px solid #e5ddce;
   border-radius: 8px;
 }
 
-.word-top {
+.item-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -138,12 +187,14 @@ main {
   font-weight: 500;
 }
 
-.count {
+.delete-button {
   flex: 0 0 auto;
-  padding: 3px 7px;
-  color: #ffffff;
-  background: #1f6f56;
-  border-radius: 999px;
+  min-width: 44px;
+  height: 26px;
+  padding: 0 7px;
+  color: #8f2e2e;
+  background: #fff3ef;
+  border: 1px solid #efc7bd;
   font-size: 12px;
 }
 
@@ -155,14 +206,22 @@ main {
 
 .definition,
 .example,
-.meta {
+.meta,
+.translation,
+.source {
   margin-top: 5px;
   color: #5e6a63;
   line-height: 1.4;
 }
 
-.example {
+.example,
+.translation {
   color: #496255;
+}
+
+.sentence {
+  color: #26342e;
+  line-height: 1.45;
 }
 
 .confusable {

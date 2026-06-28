@@ -1,81 +1,54 @@
 const CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+const MAX_SENTENCE_LENGTH = 800;
+
+const SOURCE_NOTE =
+  "Oxford/Longman are preferred authoritative sources, but this build does not include licensed API keys. It uses the configured source when available and a free fallback otherwise.";
 
 const LOCAL_ZH = {
-  abandon: "放弃；抛弃",
-  ability: "能力；才能",
-  able: "能够的；有能力的",
-  accept: "接受；同意",
-  access: "入口；使用权；访问",
-  achieve: "实现；达到",
-  across: "穿过；在对面",
-  active: "积极的；活跃的",
-  actual: "实际的；真实的",
-  adapt: "适应；改编",
-  add: "增加；补充",
-  address: "地址；处理；演说",
-  affect: "影响",
-  agree: "同意",
-  allow: "允许",
-  almost: "几乎",
-  alone: "独自的；单独地",
-  already: "已经",
-  although: "虽然；尽管",
-  always: "总是",
-  among: "在……之中",
-  analysis: "分析",
-  answer: "回答；答案",
-  appear: "出现；显得",
-  apply: "申请；应用",
-  argue: "争论；主张",
-  arrive: "到达",
-  article: "文章；物品；冠词",
-  assume: "假定；承担",
-  avoid: "避免",
-  benefit: "好处；受益",
-  cause: "原因；导致",
-  change: "改变；变化",
-  clear: "清楚的；清除",
-  compare: "比较",
-  complete: "完成；完整的",
-  consider: "考虑；认为",
-  create: "创造；创建",
-  decide: "决定",
-  develop: "发展；开发",
-  different: "不同的",
-  difficult: "困难的",
-  discover: "发现",
-  effect: "影响；效果",
-  enough: "足够的；足够地",
-  example: "例子",
-  explain: "解释",
-  focus: "焦点；集中",
-  follow: "跟随；遵循",
-  however: "然而",
-  improve: "提高；改善",
-  include: "包括",
-  important: "重要的",
-  increase: "增加",
-  issue: "问题；发布",
-  learn: "学习；得知",
-  likely: "可能的；很可能",
-  meaning: "意思；意义",
-  method: "方法",
-  notice: "注意到；通知",
-  process: "过程；处理",
-  provide: "提供",
-  question: "问题；询问",
-  reason: "原因；理由",
-  require: "需要；要求",
-  result: "结果",
-  simple: "简单的",
-  source: "来源",
-  standard: "标准；标准的",
-  suggest: "建议；暗示",
-  support: "支持",
-  through: "通过；穿过",
-  understand: "理解",
-  useful: "有用的",
-  value: "价值；重视"
+  abandon: "\u653e\u5f03\uff1b\u629b\u5f03",
+  ability: "\u80fd\u529b\uff1b\u624d\u80fd",
+  able: "\u80fd\u591f\u7684\uff1b\u6709\u80fd\u529b\u7684",
+  accept: "\u63a5\u53d7\uff1b\u540c\u610f",
+  access: "\u5165\u53e3\uff1b\u4f7f\u7528\u6743\uff1b\u8bbf\u95ee",
+  achieve: "\u5b9e\u73b0\uff1b\u8fbe\u5230",
+  active: "\u79ef\u6781\u7684\uff1b\u6d3b\u8dc3\u7684",
+  adapt: "\u9002\u5e94\uff1b\u6539\u7f16",
+  affect: "\u5f71\u54cd",
+  analysis: "\u5206\u6790",
+  appear: "\u51fa\u73b0\uff1b\u663e\u5f97",
+  apply: "\u7533\u8bf7\uff1b\u5e94\u7528",
+  assume: "\u5047\u5b9a\uff1b\u627f\u62c5",
+  avoid: "\u907f\u514d",
+  benefit: "\u597d\u5904\uff1b\u53d7\u76ca",
+  cause: "\u539f\u56e0\uff1b\u5bfc\u81f4",
+  compare: "\u6bd4\u8f83",
+  complete: "\u5b8c\u6210\uff1b\u5b8c\u6574\u7684",
+  consider: "\u8003\u8651\uff1b\u8ba4\u4e3a",
+  create: "\u521b\u9020\uff1b\u521b\u5efa",
+  develop: "\u53d1\u5c55\uff1b\u5f00\u53d1",
+  discover: "\u53d1\u73b0",
+  effect: "\u5f71\u54cd\uff1b\u6548\u679c",
+  example: "\u4f8b\u5b50",
+  explain: "\u89e3\u91ca",
+  improve: "\u63d0\u9ad8\uff1b\u6539\u5584",
+  include: "\u5305\u62ec",
+  important: "\u91cd\u8981\u7684",
+  issue: "\u95ee\u9898\uff1b\u53d1\u5e03",
+  likely: "\u53ef\u80fd\u7684\uff1b\u5f88\u53ef\u80fd",
+  method: "\u65b9\u6cd5",
+  principle: "\u539f\u5219\uff1b\u51c6\u5219",
+  principal: "\u4e3b\u8981\u7684\uff1b\u6821\u957f\uff1b\u672c\u91d1",
+  process: "\u8fc7\u7a0b\uff1b\u5904\u7406",
+  provide: "\u63d0\u4f9b",
+  require: "\u9700\u8981\uff1b\u8981\u6c42",
+  result: "\u7ed3\u679c",
+  source: "\u6765\u6e90",
+  standard: "\u6807\u51c6\uff1b\u6807\u51c6\u7684",
+  suggest: "\u5efa\u8bae\uff1b\u6697\u793a",
+  support: "\u652f\u6301",
+  understand: "\u7406\u89e3",
+  useful: "\u6709\u7528\u7684",
+  value: "\u4ef7\u503c\uff1b\u91cd\u89c6"
 };
 
 const CONFUSABLE_GROUPS = [
@@ -84,26 +57,18 @@ const CONFUSABLE_GROUPS = [
   ["advice", "advise"],
   ["adapt", "adopt"],
   ["access", "excess"],
-  ["already", "all ready"],
   ["allusion", "illusion"],
-  ["among", "between"],
   ["assure", "ensure", "insure"],
-  ["beside", "besides"],
   ["capital", "capitol"],
   ["cite", "site", "sight"],
   ["complement", "compliment"],
-  ["continuous", "continual"],
   ["desert", "dessert"],
-  ["emigrate", "immigrate"],
   ["farther", "further"],
-  ["fewer", "less"],
   ["formally", "formerly"],
   ["hear", "here"],
   ["its", "it's"],
-  ["later", "latter"],
   ["lead", "led"],
   ["loose", "lose"],
-  ["moral", "morale"],
   ["passed", "past"],
   ["personal", "personnel"],
   ["principal", "principle"],
@@ -118,8 +83,14 @@ const CONFUSABLE_GROUPS = [
 ];
 
 chrome.runtime.onInstalled.addListener(async () => {
-  const { wordStats } = await chrome.storage.local.get({ wordStats: {} });
-  await chrome.storage.local.set({ wordStats });
+  const { wordStats = {}, sentenceNotes = {}, lookupCache = {}, translationCache = {} } =
+    await chrome.storage.local.get({
+      wordStats: {},
+      sentenceNotes: {},
+      lookupCache: {},
+      translationCache: {}
+    });
+  await chrome.storage.local.set({ wordStats, sentenceNotes, lookupCache, translationCache });
 });
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -130,13 +101,44 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
-  if (message?.type === "GET_WORD_BOOK") {
-    getWordBook().then(sendResponse);
+  if (message?.type === "TRANSLATE_SENTENCE") {
+    handleTranslateSentence(message.text)
+      .then(sendResponse)
+      .catch((error) => sendResponse({ ok: false, error: error.message || "Translation failed." }));
+    return true;
+  }
+
+  if (message?.type === "SAVE_SENTENCE") {
+    saveSentence(message.entry)
+      .then(sendResponse)
+      .catch((error) => sendResponse({ ok: false, error: error.message || "Save failed." }));
+    return true;
+  }
+
+  if (message?.type === "DELETE_WORD") {
+    deleteWord(message.word).then(sendResponse);
+    return true;
+  }
+
+  if (message?.type === "DELETE_SENTENCE") {
+    deleteSentence(message.id).then(sendResponse);
+    return true;
+  }
+
+  if (message?.type === "GET_WORD_BOOK" || message?.type === "GET_LIBRARY") {
+    getLibrary().then(sendResponse);
     return true;
   }
 
   if (message?.type === "CLEAR_WORD_BOOK") {
     chrome.storage.local.set({ wordStats: {}, lookupCache: {} }).then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
+  if (message?.type === "CLEAR_ALL_DATA") {
+    chrome.storage.local
+      .set({ wordStats: {}, sentenceNotes: {}, lookupCache: {}, translationCache: {} })
+      .then(() => sendResponse({ ok: true }));
     return true;
   }
 
@@ -157,7 +159,25 @@ async function handleLookup(rawWord) {
       count: stats.count,
       firstSeen: stats.firstSeen,
       lastSeen: stats.lastSeen,
-      confusables: getConfusables(word)
+      confusables: getConfusables(word),
+      sourceNote: SOURCE_NOTE
+    }
+  };
+}
+
+async function handleTranslateSentence(rawText) {
+  const text = normalizeSentence(rawText);
+  if (!text) return { ok: false, error: "No valid sentence selected." };
+
+  const translation = await getTranslation(text);
+  return {
+    ok: true,
+    entry: {
+      id: makeSentenceId(text),
+      text,
+      translation: translation.text,
+      source: translation.source,
+      createdAt: new Date().toISOString()
     }
   };
 }
@@ -169,25 +189,30 @@ function normalizeWord(rawWord) {
     .toLowerCase();
 }
 
+function normalizeSentence(rawText) {
+  return String(rawText || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, MAX_SENTENCE_LENGTH);
+}
+
 async function getLookup(word) {
   const { lookupCache = {} } = await chrome.storage.local.get({ lookupCache: {} });
   const cached = lookupCache[word];
   if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) return cached.data;
 
-  const [dictionary, chinese] = await Promise.all([
-    fetchDictionaryApi(word),
-    fetchChineseMeaning(word)
-  ]);
+  const [dictionary, chinese] = await Promise.all([fetchDictionaryApi(word), fetchChineseMeaning(word)]);
 
   const data = {
     word,
     phonetic: dictionary.phonetic || "",
     audio: dictionary.audio || "",
-    chinese: chinese || LOCAL_ZH[word] || "暂无中文释义，可在联网后重试。",
+    chinese: chinese || LOCAL_ZH[word] || "\u6682\u65e0\u4e2d\u6587\u91ca\u4e49\uff0c\u53ef\u5728\u8054\u7f51\u540e\u91cd\u8bd5\u3002",
     englishDefinition: dictionary.englishDefinition || "A word found in the current English page.",
     partOfSpeech: dictionary.partOfSpeech || "",
     example: dictionary.example || makeSimpleSentence(word, dictionary.partOfSpeech),
-    source: dictionary.source || "fallback"
+    source: dictionary.source || "free fallback",
+    sourceNote: SOURCE_NOTE
   };
 
   lookupCache[word] = { cachedAt: Date.now(), data };
@@ -213,7 +238,7 @@ async function fetchDictionaryApi(word) {
       englishDefinition: simplifyDefinition(firstDefinition.definition),
       partOfSpeech: firstMeaning.partOfSpeech || "",
       example: firstDefinition.example || "",
-      source: "dictionaryapi.dev"
+      source: "dictionaryapi.dev fallback"
     };
   } catch (_error) {
     return {};
@@ -235,26 +260,34 @@ async function fetchChineseMeaning(word) {
   }
 }
 
-function simplifyDefinition(definition) {
-  if (!definition) return "";
-  const cleaned = definition.replace(/\s+/g, " ").trim();
-  if (cleaned.length <= 150) return cleaned;
-  return `${cleaned.slice(0, 147).trim()}...`;
+async function getTranslation(text) {
+  const { translationCache = {} } = await chrome.storage.local.get({ translationCache: {} });
+  const id = makeSentenceId(text);
+  const cached = translationCache[id];
+  if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) return cached.data;
+
+  const data = await fetchMyMemoryTranslation(text);
+  translationCache[id] = { cachedAt: Date.now(), data };
+  await chrome.storage.local.set({ translationCache });
+  return data;
 }
 
-function cleanChineseText(text) {
-  return String(text || "")
-    .replace(/\s+/g, " ")
-    .replace(/网络释义|专业释义|英英释义/g, "")
-    .trim();
-}
+async function fetchMyMemoryTranslation(text) {
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|zh-CN`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Translation request failed.");
+    const payload = await response.json();
+    const translated = payload?.responseData?.translatedText;
+    if (translated) return { text: cleanTranslatedText(translated), source: "MyMemory fallback" };
+  } catch (_error) {
+    // Keep the extension usable offline or when the free endpoint throttles.
+  }
 
-function makeSimpleSentence(word, partOfSpeech) {
-  const article = /^[aeiou]/i.test(word) ? "an" : "a";
-  if (partOfSpeech === "verb") return `I can ${word} this idea in a simple way.`;
-  if (partOfSpeech === "adjective") return `This is a ${word} example.`;
-  if (partOfSpeech === "adverb") return `She spoke ${word} and everyone understood.`;
-  return `I found ${article} ${word} in the article.`;
+  return {
+    text: "\u6682\u65e0\u53ef\u7528\u7ffb\u8bd1\uff0c\u8bf7\u8054\u7f51\u540e\u91cd\u8bd5\u3002",
+    source: "offline fallback"
+  };
 }
 
 async function recordLookup(word, lookup) {
@@ -280,8 +313,52 @@ async function recordLookup(word, lookup) {
   return wordStats[word];
 }
 
-async function getWordBook() {
+async function saveSentence(entry) {
+  const text = normalizeSentence(entry?.text);
+  if (!text) return { ok: false, error: "No sentence to save." };
+
+  const { sentenceNotes = {} } = await chrome.storage.local.get({ sentenceNotes: {} });
+  const id = entry?.id || makeSentenceId(text);
+  const now = new Date().toISOString();
+  const current = sentenceNotes[id] || {};
+
+  sentenceNotes[id] = {
+    ...current,
+    id,
+    text,
+    translation: normalizeSentence(entry?.translation) || current.translation || "",
+    source: entry?.source || current.source || "manual",
+    pageTitle: entry?.pageTitle || current.pageTitle || "",
+    pageUrl: entry?.pageUrl || current.pageUrl || "",
+    createdAt: current.createdAt || now,
+    savedAt: now
+  };
+
+  await chrome.storage.local.set({ sentenceNotes });
+  return { ok: true, entry: sentenceNotes[id] };
+}
+
+async function deleteWord(rawWord) {
+  const word = normalizeWord(rawWord);
   const { wordStats = {} } = await chrome.storage.local.get({ wordStats: {} });
+  delete wordStats[word];
+  await chrome.storage.local.set({ wordStats });
+  return { ok: true };
+}
+
+async function deleteSentence(id) {
+  const { sentenceNotes = {} } = await chrome.storage.local.get({ sentenceNotes: {} });
+  delete sentenceNotes[id];
+  await chrome.storage.local.set({ sentenceNotes });
+  return { ok: true };
+}
+
+async function getLibrary() {
+  const { wordStats = {}, sentenceNotes = {} } = await chrome.storage.local.get({
+    wordStats: {},
+    sentenceNotes: {}
+  });
+
   const words = Object.values(wordStats)
     .map((item) => ({
       ...item,
@@ -289,11 +366,17 @@ async function getWordBook() {
     }))
     .sort((a, b) => (b.count || 0) - (a.count || 0) || a.word.localeCompare(b.word));
 
+  const sentences = Object.values(sentenceNotes).sort((a, b) => {
+    return new Date(b.savedAt || b.createdAt || 0) - new Date(a.savedAt || a.createdAt || 0);
+  });
+
   return {
     ok: true,
     words,
+    sentences,
     frequencyGroups: groupByFrequency(words),
-    confusableGroups: groupByConfusables(words)
+    confusableGroups: groupByConfusables(words),
+    sourceNote: SOURCE_NOTE
   };
 }
 
@@ -308,10 +391,10 @@ function groupByFrequency(words) {
 function groupByConfusables(words) {
   const seenWords = new Set(words.map((item) => item.word));
   const known = CONFUSABLE_GROUPS.map((group) => group.filter((word) => seenWords.has(word)))
-    .filter((group) => group.length > 0)
+    .filter((group) => group.length >= 2)
     .map((group) => ({
       title: group.join(" / "),
-      words: group.map((word) => words.find((item) => item.word === word))
+      words: group.map((word) => words.find((item) => item.word === word)).filter(Boolean)
     }));
 
   const fuzzy = [];
@@ -320,10 +403,12 @@ function groupByConfusables(words) {
       if (candidate.word === item.word) return false;
       return areSimilarWords(item.word, candidate.word);
     });
-    if (matches.length > 0 && !fuzzy.some((group) => group.words.some((word) => word.word === item.word))) {
+
+    const groupWords = [item, ...matches];
+    if (groupWords.length >= 2 && !fuzzy.some((group) => group.words.some((word) => word.word === item.word))) {
       fuzzy.push({
-        title: [item.word, ...matches.map((match) => match.word)].join(" / "),
-        words: [item, ...matches]
+        title: groupWords.map((word) => word.word).join(" / "),
+        words: groupWords
       });
     }
   }
@@ -359,4 +444,48 @@ function levenshtein(left, right) {
   }
 
   return matrix[left.length][right.length];
+}
+
+function simplifyDefinition(definition) {
+  if (!definition) return "";
+  const cleaned = definition.replace(/\s+/g, " ").trim();
+  if (cleaned.length <= 170) return cleaned;
+  return `${cleaned.slice(0, 167).trim()}...`;
+}
+
+function cleanChineseText(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/\u7f51\u7edc\u91ca\u4e49|\u4e13\u4e1a\u91ca\u4e49|\u82f1\u82f1\u91ca\u4e49/g, "")
+    .trim();
+}
+
+function cleanTranslatedText(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .trim();
+}
+
+function makeSimpleSentence(word, partOfSpeech) {
+  const article = /^[aeiou]/i.test(word) ? "an" : "a";
+  if (partOfSpeech === "verb") return `I can ${word} this idea in a simple way.`;
+  if (partOfSpeech === "adjective") return `This is a ${word} example.`;
+  if (partOfSpeech === "adverb") return `She spoke ${word} and everyone understood.`;
+  return `I found ${article} ${word} in the article.`;
+}
+
+function makeSentenceId(text) {
+  return `sentence-${hashText(text).toString(36)}`;
+}
+
+function hashText(text) {
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash << 5) - hash + text.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
 }

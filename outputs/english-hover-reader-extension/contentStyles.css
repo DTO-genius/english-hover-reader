@@ -97,18 +97,52 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
-  color: #5f6a63;
-  font-size: 12px;
+  color: #7a827c;
+  font-size: 11px;
 }
 
 .ehr-foot span {
-  padding: 3px 6px;
-  background: #f4efe6;
-  border-radius: 999px;
+  padding: 0;
 }
 
 .ehr-error {
   color: #9d2f2f;
+}
+
+.ehr-sentence {
+  max-height: 120px;
+  overflow: auto;
+}
+
+.ehr-translation {
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.ehr-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.ehr-save {
+  height: 30px;
+  padding: 0 10px;
+  color: #ffffff;
+  background: #1f6f56;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.ehr-save:hover {
+  background: #185744;
+}
+
+.ehr-save:disabled {
+  cursor: default;
+  opacity: 0.72;
 }
 
 .ehr-loading {
