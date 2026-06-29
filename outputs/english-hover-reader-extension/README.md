@@ -25,6 +25,7 @@ Chrome Manifest V3 English reading assistant. Select an English word or sentence
 
 - Word lookup: select a single English word, then right-click it.
 - Sentence translation: select an English sentence, then right-click it.
+- If Chrome narrows the selection during right-click, the extension uses the most recent full selection captured on mouseup/right-mousedown.
 - Save sentence: click the save button in the translation card.
 - Manual lookup: click the extension icon and type a word into the search box.
 - Full library: click "全部" in the popup, or open the extension options page.

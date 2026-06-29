@@ -1,11 +1,18 @@
 const LOOKUP_DELAY_MS = 260;
 const WORD_PATTERN = /^[A-Za-z][A-Za-z'-]{1,34}$/;
+const SELECTION_CACHE_MS = 8000;
 
 let actionTimer = 0;
 let activeKey = "";
 let card = null;
+let lastSelectionHit = null;
+let pendingContextHit = null;
 
+document.addEventListener("mousedown", handleMouseDown, true);
 document.addEventListener("contextmenu", handleContextMenu, true);
+document.addEventListener("selectionchange", cacheCurrentSelection);
+document.addEventListener("mouseup", cacheCurrentSelection, true);
+document.addEventListener("keyup", cacheCurrentSelection, true);
 document.addEventListener("scroll", hideCard, { passive: true });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") hideCard();
@@ -14,27 +21,89 @@ document.addEventListener("keydown", (event) => {
 function handleContextMenu(event) {
   if (card?.contains(event.target) || isIgnoredElement(event.target)) return;
 
-  const hit = getSelectedTextHit();
+  const hit = getBestSelectedTextHit(event.clientX, event.clientY);
   if (!hit) {
     hideCard();
     return;
   }
 
-  const word = getSingleSelectedWord(hit.text);
-  const key = word ? `word:${word}` : `sentence:${hit.text}`;
+  const selectionType = classifySelection(hit.text);
+  if (selectionType.kind === "invalid") {
+    hideCard();
+    return;
+  }
+  const key = selectionType.kind === "word" ? `word:${selectionType.word}` : `sentence:${hit.text}`;
 
   event.preventDefault();
   window.clearTimeout(actionTimer);
   activeKey = key;
 
-  if (word) {
-    showLoadingCard(hit.rect, word, "\u67e5\u8bcd\u4e2d...");
-    actionTimer = window.setTimeout(() => lookupWord(word, hit.rect), LOOKUP_DELAY_MS);
+  if (selectionType.kind === "word") {
+    showLoadingCard(hit.rect, selectionType.word, "\u67e5\u8bcd\u4e2d...");
+    actionTimer = window.setTimeout(() => lookupWord(selectionType.word, hit.rect), LOOKUP_DELAY_MS);
     return;
   }
 
   showLoadingCard(hit.rect, "\u53e5\u5b50\u7ffb\u8bd1", "\u7ffb\u8bd1\u4e2d...");
   actionTimer = window.setTimeout(() => translateSentence(hit.text, hit.rect), LOOKUP_DELAY_MS);
+}
+
+function handleMouseDown(event) {
+  if (event.button !== 2) return;
+  pendingContextHit = null;
+  const hit = getBestSelectedTextHit(event.clientX, event.clientY);
+  if (!hit || classifySelection(hit.text).kind === "invalid") return;
+  pendingContextHit = {
+    ...hit,
+    cachedAt: Date.now()
+  };
+}
+
+function cacheCurrentSelection() {
+  const hit = getSelectedTextHit();
+  if (!hit) return;
+  const hitType = classifySelection(hit.text);
+  if (hitType.kind === "invalid") return;
+
+  const currentType = classifySelection(lastSelectionHit?.text || "");
+  if (
+    isFreshSelectionHit(lastSelectionHit) &&
+    currentType.kind === "sentence" &&
+    hitType.kind === "word" &&
+    hit.text.length < lastSelectionHit.text.length
+  ) {
+    return;
+  }
+
+  lastSelectionHit = {
+    ...hit,
+    cachedAt: Date.now()
+  };
+}
+
+function getBestSelectedTextHit(clientX, clientY) {
+  if (isFreshSelectionHit(pendingContextHit) && pointInsideAnyRect(clientX, clientY, pendingContextHit.rects)) {
+    return pendingContextHit;
+  }
+
+  const liveHit = getSelectedTextHit();
+  const cachedHit = isFreshSelectionHit(lastSelectionHit) ? lastSelectionHit : null;
+  if (!cachedHit) return liveHit;
+  if (!liveHit) return cachedHit;
+
+  const liveType = classifySelection(liveHit.text);
+  const cachedType = classifySelection(cachedHit.text);
+  const clickedCachedSelection = pointInsideAnyRect(clientX, clientY, cachedHit.rects);
+
+  if (clickedCachedSelection && cachedType.kind === "sentence" && liveType.kind !== "sentence") {
+    return cachedHit;
+  }
+
+  if (clickedCachedSelection && cachedHit.text.length > liveHit.text.length) {
+    return cachedHit;
+  }
+
+  return liveHit;
 }
 
 function getSelectedTextHit() {
@@ -45,24 +114,48 @@ function getSelectedTextHit() {
   if (!text || !/[A-Za-z]/.test(text)) return null;
 
   const range = selection.getRangeAt(0);
-  const rect = getSelectionRect(range);
+  const rects = getSelectionRects(range);
+  const rect = rects[0] || range.getBoundingClientRect();
   if (!rect.width || !rect.height) return null;
 
-  return { text, rect };
+  return { text, rect, rects };
 }
 
-function getSingleSelectedWord(text) {
+function classifySelection(text) {
   const normalized = String(text || "")
     .trim()
     .replace(/^[^A-Za-z]+|[^A-Za-z]+$/g, "");
+  const words = normalized.match(/[A-Za-z][A-Za-z'-]*/g) || [];
+  const hasSentencePunctuation = /[.!?;:]/.test(normalized);
+  const hasInternalWhitespace = /\s/.test(normalized);
 
-  if (!normalized || /\s/.test(normalized)) return "";
-  return WORD_PATTERN.test(normalized) ? normalized.toLowerCase() : "";
+  if (!normalized || words.length === 0) return { kind: "invalid" };
+
+  if (words.length === 1 && !hasInternalWhitespace && !hasSentencePunctuation && WORD_PATTERN.test(normalized)) {
+    return { kind: "word", word: normalized.toLowerCase() };
+  }
+
+  if (words.length === 1 && !hasInternalWhitespace) return { kind: "invalid" };
+
+  return { kind: "sentence" };
 }
 
-function getSelectionRect(range) {
+function getSelectionRects(range) {
   const rects = Array.from(range.getClientRects()).filter((rect) => rect.width && rect.height);
-  return rects[0] || range.getBoundingClientRect();
+  if (rects.length) return rects;
+  const rect = range.getBoundingClientRect();
+  return rect.width && rect.height ? [rect] : [];
+}
+
+function isFreshSelectionHit(hit) {
+  return Boolean(hit && Date.now() - hit.cachedAt < SELECTION_CACHE_MS);
+}
+
+function pointInsideAnyRect(x, y, rects = []) {
+  return rects.some((rect) => {
+    const padding = 3;
+    return x >= rect.left - padding && x <= rect.right + padding && y >= rect.top - padding && y <= rect.bottom + padding;
+  });
 }
 
 async function lookupWord(word, rect) {
@@ -141,7 +234,7 @@ function renderWordEntry(rect, entry) {
     </div>
   `;
 
-  node.querySelector(".ehr-audio").addEventListener("click", () => playAudio(entry));
+  node.querySelector(".ehr-audio")?.addEventListener("click", () => playAudio(entry));
   positionCard(node, rect);
 }
 
@@ -164,7 +257,7 @@ function renderSentenceEntry(rect, entry) {
     </div>
   `;
 
-  node.querySelector(".ehr-save").addEventListener("click", async (event) => {
+  node.querySelector(".ehr-save")?.addEventListener("click", async (event) => {
     const button = event.currentTarget;
     button.disabled = true;
     button.textContent = "\u4fdd\u5b58\u4e2d...";

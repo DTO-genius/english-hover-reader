@@ -91,6 +91,23 @@ footer button {
   border: 0;
 }
 
+.lookup-form button:disabled,
+.lookup-form input:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.lookup-status {
+  min-height: 18px;
+  padding: 4px 16px 0;
+  color: #647068;
+  font-size: 12px;
+}
+
+.lookup-status.error {
+  color: #9d2f2f;
+}
+
 .tabs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

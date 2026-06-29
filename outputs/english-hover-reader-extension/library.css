@@ -62,8 +62,9 @@ h1 {
 
 .tools {
   display: grid;
-  grid-template-columns: minmax(280px, 420px) 1fr;
+  grid-template-columns: minmax(280px, 420px) minmax(160px, 240px) 1fr;
   gap: 12px;
+  align-items: start;
   padding: 16px 28px;
   background: #fffdf8;
   border-bottom: 1px solid #e3dccf;
@@ -88,6 +89,24 @@ input {
 
 input:focus {
   border-color: #1f6f56;
+}
+
+.lookup-form button:disabled,
+.lookup-form input:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.lookup-status {
+  min-height: 36px;
+  margin: 0;
+  padding-top: 8px;
+  color: #637168;
+  font-size: 12px;
+}
+
+.lookup-status.error {
+  color: #9d2f2f;
 }
 
 main {

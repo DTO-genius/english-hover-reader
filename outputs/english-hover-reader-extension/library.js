@@ -36,13 +36,26 @@ async function loadLibrary() {
 async function handleLookup(event) {
   event.preventDefault();
   const input = document.getElementById("lookupInput");
+  const submitButton = event.currentTarget.querySelector("button[type='submit']");
   const word = input.value.trim();
   if (!word) return;
-  input.disabled = true;
-  await chrome.runtime.sendMessage({ type: "LOOKUP_WORD", word });
-  input.value = "";
-  input.disabled = false;
-  await loadLibrary();
+
+  try {
+    input.disabled = true;
+    submitButton.disabled = true;
+    setLookupStatus("\u67e5\u8bcd\u4e2d...");
+    const response = await chrome.runtime.sendMessage({ type: "LOOKUP_WORD", word });
+    if (!response?.ok) throw new Error(response?.error || "\u67e5\u8bcd\u5931\u8d25");
+    input.value = "";
+    setLookupStatus(`\u5df2\u6536\u5f55 ${response.entry.word}`);
+    await loadLibrary();
+  } catch (error) {
+    setLookupStatus(error.message || "\u67e5\u8bcd\u5931\u8d25", true);
+  } finally {
+    input.disabled = false;
+    submitButton.disabled = false;
+    input.focus();
+  }
 }
 
 async function handleDeleteClick(event) {
@@ -185,4 +198,10 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function setLookupStatus(message, isError = false) {
+  const node = document.getElementById("lookupStatus");
+  node.textContent = message;
+  node.classList.toggle("error", isError);
 }
