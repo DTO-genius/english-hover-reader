@@ -3,7 +3,8 @@ let libraryState = {
   sentences: [],
   frequencyGroups: {},
   confusableGroups: [],
-  filter: ""
+  filter: "",
+  activeTab: "words"
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -15,6 +16,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("filterInput").addEventListener("input", (event) => {
     libraryState.filter = event.target.value.trim().toLowerCase();
     render();
+  });
+  document.querySelectorAll(".library-tabs button").forEach((button) => {
+    button.addEventListener("click", () => {
+      libraryState.activeTab = button.dataset.tab;
+      render();
+    });
   });
   document.body.addEventListener("click", handleDeleteClick);
 
@@ -44,11 +51,16 @@ async function handleLookup(event) {
     input.disabled = true;
     submitButton.disabled = true;
     setLookupStatus("\u67e5\u8bcd\u4e2d...");
-    const response = await chrome.runtime.sendMessage({ type: "LOOKUP_WORD", word });
+    const response = await chrome.runtime.sendMessage({ type: "PREVIEW_WORD", word });
     if (!response?.ok) throw new Error(response?.error || "\u67e5\u8bcd\u5931\u8d25");
     input.value = "";
-    setLookupStatus(`\u5df2\u6536\u5f55 ${response.entry.word}`);
-    await loadLibrary();
+    setLookupStatus("\u5df2\u6253\u5f00\u67e5\u8bcd\u9884\u89c8");
+    window.EHRWordPreview.open(response.entry, {
+      onSaved(savedEntry) {
+        setLookupStatus(`\u5df2\u6536\u85cf ${savedEntry.word}`);
+        loadLibrary();
+      }
+    });
   } catch (error) {
     setLookupStatus(error.message || "\u67e5\u8bcd\u5931\u8d25", true);
   } finally {
@@ -84,9 +96,20 @@ function render() {
   document.getElementById("sentencesCount").textContent = sentences.length;
   document.getElementById("confusableCount").textContent = confusableGroups.length;
 
+  renderActiveTab();
   renderWords(words);
   renderConfusables(confusableGroups);
   renderSentences(sentences);
+}
+
+function renderActiveTab() {
+  document.querySelectorAll(".library-tabs button").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === libraryState.activeTab);
+  });
+
+  document.querySelectorAll("[data-panel]").forEach((panel) => {
+    panel.classList.toggle("active", panel.dataset.panel === libraryState.activeTab);
+  });
 }
 
 function renderWords(words) {

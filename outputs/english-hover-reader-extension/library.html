@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>English Hover Reader Library</title>
     <link rel="stylesheet" href="library.css">
+    <link rel="stylesheet" href="wordPreview.css">
   </head>
   <body>
     <header class="topbar">
@@ -24,11 +25,17 @@
         <button type="submit">&#26597;&#35789;</button>
       </form>
       <p id="lookupStatus" class="lookup-status" aria-live="polite"></p>
-      <input id="filterInput" type="search" placeholder="&#25628;&#32034;&#21333;&#35789;&#25110;&#21477;&#23376;">
+      <input id="filterInput" class="filter-input" type="search" placeholder="&#26816;&#32034;&#24050;&#26377;&#21333;&#35789;&#25110;&#32773;&#21477;&#23376;">
     </section>
 
+    <nav class="library-tabs" aria-label="&#23398;&#20064;&#24211;&#20998;&#31867;">
+      <button class="active" type="button" data-tab="words">&#21333;&#35789;&#26412;</button>
+      <button type="button" data-tab="sentences">&#25688;&#25220;&#26412;</button>
+      <button type="button" data-tab="confusable">&#26131;&#28151;&#28102;</button>
+    </nav>
+
     <main>
-      <section class="panel" id="wordsPanel">
+      <section class="panel active" id="wordsPanel" data-panel="words">
         <div class="panel-head">
           <h2>&#21333;&#35789;&#26412;</h2>
           <span id="wordsCount">0</span>
@@ -36,24 +43,25 @@
         <div id="wordsList"></div>
       </section>
 
-      <section class="panel" id="confusablePanel">
-        <div class="panel-head">
-          <h2>&#24418;&#20284;&#26131;&#28151;</h2>
-          <span id="confusableCount">0</span>
-        </div>
-        <div id="confusableList"></div>
-      </section>
-
-      <section class="panel" id="sentencesPanel">
+      <section class="panel" id="sentencesPanel" data-panel="sentences">
         <div class="panel-head">
           <h2>&#25688;&#25220;&#26412;</h2>
           <span id="sentencesCount">0</span>
         </div>
         <div id="sentencesList"></div>
       </section>
+
+      <section class="panel" id="confusablePanel" data-panel="confusable">
+        <div class="panel-head">
+          <h2>&#24418;&#20284;&#26131;&#28151;</h2>
+          <span id="confusableCount">0</span>
+        </div>
+        <div id="confusableList"></div>
+      </section>
     </main>
 
     <script src="exporter.js"></script>
+    <script src="wordPreview.js"></script>
     <script src="library.js"></script>
   </body>
 </html>

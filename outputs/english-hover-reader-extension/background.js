@@ -101,6 +101,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "PREVIEW_WORD") {
+    handlePreviewWord(message.word)
+      .then(sendResponse)
+      .catch((error) => sendResponse({ ok: false, error: error.message || "Preview failed." }));
+    return true;
+  }
+
+  if (message?.type === "SAVE_WORD") {
+    saveWord(message.entry || { word: message.word })
+      .then(sendResponse)
+      .catch((error) => sendResponse({ ok: false, error: error.message || "Save failed." }));
+    return true;
+  }
+
   if (message?.type === "TRANSLATE_SENTENCE") {
     handleTranslateSentence(message.text)
       .then(sendResponse)
@@ -150,8 +164,54 @@ async function handleLookup(rawWord) {
   if (!word) return { ok: false, error: "No valid English word found." };
 
   const lookup = await getLookup(word);
+  if (!lookup.isEnglishWord) {
+    return {
+      ok: true,
+      entry: {
+        ...lookup,
+        count: 0,
+        confusables: getConfusables(word),
+        sourceNote: SOURCE_NOTE
+      }
+    };
+  }
+
   const stats = await recordLookup(word, lookup);
 
+  return {
+    ok: true,
+    entry: {
+      ...lookup,
+      count: stats.count,
+      firstSeen: stats.firstSeen,
+      lastSeen: stats.lastSeen,
+      confusables: getConfusables(word),
+      sourceNote: SOURCE_NOTE
+    }
+  };
+}
+
+async function handlePreviewWord(rawWord) {
+  const word = normalizeWord(rawWord);
+  if (!word) return { ok: false, error: "No valid English word found." };
+
+  const lookup = await getLookup(word);
+  return {
+    ok: true,
+    entry: {
+      ...lookup,
+      confusables: getConfusables(word),
+      sourceNote: SOURCE_NOTE
+    }
+  };
+}
+
+async function saveWord(entry) {
+  const word = normalizeWord(entry?.word);
+  if (!word) return { ok: false, error: "No valid English word found." };
+
+  const lookup = entry?.englishDefinition ? normalizeLookupEntry(entry) : await getLookup(word);
+  const stats = await recordLookup(word, lookup);
   return {
     ok: true,
     entry: {
@@ -199,20 +259,28 @@ function normalizeSentence(rawText) {
 async function getLookup(word) {
   const { lookupCache = {} } = await chrome.storage.local.get({ lookupCache: {} });
   const cached = lookupCache[word];
-  if (cached && Date.now() - cached.cachedAt < CACHE_TTL_MS) return cached.data;
+  if (cached && cached.data && "isEnglishWord" in cached.data && Date.now() - cached.cachedAt < CACHE_TTL_MS) {
+    return cached.data;
+  }
 
   const [dictionary, chinese] = await Promise.all([fetchDictionaryApi(word), fetchChineseMeaning(word)]);
+  const isEnglishWord = Boolean(dictionary.found || LOCAL_ZH[word]);
 
   const data = {
     word,
     phonetic: dictionary.phonetic || "",
     audio: dictionary.audio || "",
     chinese: chinese || LOCAL_ZH[word] || "\u6682\u65e0\u4e2d\u6587\u91ca\u4e49\uff0c\u53ef\u5728\u8054\u7f51\u540e\u91cd\u8bd5\u3002",
-    englishDefinition: dictionary.englishDefinition || "A word found in the current English page.",
+    englishDefinition: dictionary.englishDefinition || "No confirmed English dictionary entry was found.",
     partOfSpeech: dictionary.partOfSpeech || "",
     example: dictionary.example || makeSimpleSentence(word, dictionary.partOfSpeech),
     source: dictionary.source || "free fallback",
-    sourceNote: SOURCE_NOTE
+    sourceNote: SOURCE_NOTE,
+    isEnglishWord,
+    languageStatus: isEnglishWord ? "english" : "unknown",
+    languageNote: isEnglishWord
+      ? "\u5df2\u5728\u82f1\u8bed\u8bcd\u5e93\u4e2d\u786e\u8ba4"
+      : "\u672a\u5728\u82f1\u8bed\u8bcd\u5e93\u4e2d\u786e\u8ba4\uff0c\u53ef\u80fd\u662f\u5176\u4ed6\u8bed\u8a00\u8bcd\u3001\u62fc\u5199\u9519\u8bef\u6216\u514d\u8d39\u8bcd\u5e93\u672a\u6536\u5f55"
   };
 
   lookupCache[word] = { cachedAt: Date.now(), data };
@@ -233,6 +301,7 @@ async function fetchDictionaryApi(word) {
     const audio = entry.phonetics?.find((item) => item.audio)?.audio || "";
 
     return {
+      found: Boolean(firstDefinition.definition),
       phonetic,
       audio,
       englishDefinition: simplifyDefinition(firstDefinition.definition),
@@ -243,6 +312,29 @@ async function fetchDictionaryApi(word) {
   } catch (_error) {
     return {};
   }
+}
+
+function normalizeLookupEntry(entry) {
+  const word = normalizeWord(entry.word);
+  const isEnglishWord = Boolean(entry.isEnglishWord);
+  return {
+    word,
+    phonetic: String(entry.phonetic || ""),
+    audio: String(entry.audio || ""),
+    chinese: String(entry.chinese || ""),
+    englishDefinition: String(entry.englishDefinition || ""),
+    partOfSpeech: String(entry.partOfSpeech || ""),
+    example: String(entry.example || ""),
+    source: String(entry.source || "manual preview"),
+    sourceNote: SOURCE_NOTE,
+    isEnglishWord,
+    languageStatus: entry.languageStatus || (isEnglishWord ? "english" : "unknown"),
+    languageNote:
+      entry.languageNote ||
+      (isEnglishWord
+        ? "\u5df2\u5728\u82f1\u8bed\u8bcd\u5e93\u4e2d\u786e\u8ba4"
+        : "\u672a\u5728\u82f1\u8bed\u8bcd\u5e93\u4e2d\u786e\u8ba4\uff0c\u53ef\u80fd\u662f\u5176\u4ed6\u8bed\u8a00\u8bcd\u3001\u62fc\u5199\u9519\u8bef\u6216\u514d\u8d39\u8bcd\u5e93\u672a\u6536\u5f55")
+  };
 }
 
 async function fetchChineseMeaning(word) {

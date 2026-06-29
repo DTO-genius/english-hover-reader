@@ -1,0 +1,132 @@
+.ehr-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(20, 27, 23, 0.34);
+}
+
+.ehr-preview-dialog {
+  width: min(520px, 100%);
+  max-height: min(640px, calc(100vh - 36px));
+  overflow: auto;
+  color: #18231e;
+  background: #fffdf8;
+  border: 1px solid #ded6c8;
+  border-radius: 8px;
+  box-shadow: 0 18px 44px rgba(24, 31, 27, 0.28);
+}
+
+.ehr-preview-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #e8e0d2;
+}
+
+.ehr-preview-word {
+  margin: 0;
+  color: #102018;
+  font-size: 24px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.ehr-preview-ipa {
+  display: block;
+  margin-top: 4px;
+  color: #647068;
+  font-size: 13px;
+}
+
+.ehr-preview-close {
+  width: 32px;
+  height: 32px;
+  color: #4c5a52;
+  background: #f4efe6;
+  border: 1px solid #e2d8c7;
+  border-radius: 6px;
+}
+
+.ehr-preview-body {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.ehr-preview-badge {
+  justify-self: start;
+  padding: 4px 8px;
+  color: #1f6f56;
+  background: #edf7f1;
+  border: 1px solid #cde5d8;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ehr-preview-badge.warning {
+  color: #8a5a1f;
+  background: #fff6df;
+  border-color: #ead59e;
+}
+
+.ehr-preview-meaning {
+  padding: 9px 10px;
+  color: #102018;
+  background: #eef7e8;
+  border: 1px solid rgba(69, 125, 86, 0.18);
+  border-radius: 6px;
+  font-weight: 650;
+}
+
+.ehr-preview-section span {
+  display: block;
+  margin-bottom: 3px;
+  color: #7a6750;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.ehr-preview-section p {
+  margin: 0;
+  color: #26342e;
+  line-height: 1.45;
+}
+
+.ehr-preview-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #e8e0d2;
+}
+
+.ehr-preview-foot button {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
+}
+
+.ehr-preview-audio {
+  color: #1f6f56;
+  background: #edf7f1;
+  border: 1px solid #cde5d8;
+}
+
+.ehr-preview-save {
+  color: #ffffff;
+  background: #1f6f56;
+  border: 0;
+}
+
+.ehr-preview-save:disabled {
+  cursor: default;
+  opacity: 0.72;
+}

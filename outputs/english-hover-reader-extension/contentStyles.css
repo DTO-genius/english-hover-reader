@@ -74,6 +74,17 @@
   font-weight: 650;
 }
 
+.ehr-word-status {
+  margin: 6px 0 8px;
+  color: #496255;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.ehr-word-status.warning {
+  color: #8a5a1f;
+}
+
 .ehr-section {
   margin-top: 8px;
 }

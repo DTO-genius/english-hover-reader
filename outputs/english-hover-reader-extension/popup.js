@@ -49,15 +49,20 @@ async function handleManualLookup(event) {
     input.disabled = true;
     submitButton.disabled = true;
     setLookupStatus("\u67e5\u8bcd\u4e2d...");
-    const response = await chrome.runtime.sendMessage({ type: "LOOKUP_WORD", word });
+    const response = await chrome.runtime.sendMessage({ type: "PREVIEW_WORD", word });
     if (!response?.ok) throw new Error(response?.error || "\u67e5\u8bcd\u5931\u8d25");
     input.value = "";
-    state.mode = "frequency";
-    document.querySelectorAll(".tabs button").forEach((item) => {
-      item.classList.toggle("active", item.dataset.mode === "frequency");
+    setLookupStatus("\u5df2\u6253\u5f00\u67e5\u8bcd\u9884\u89c8");
+    window.EHRWordPreview.open(response.entry, {
+      onSaved(savedEntry) {
+        state.mode = "frequency";
+        document.querySelectorAll(".tabs button").forEach((item) => {
+          item.classList.toggle("active", item.dataset.mode === "frequency");
+        });
+        setLookupStatus(`\u5df2\u6536\u85cf ${savedEntry.word}`);
+        loadLibrary();
+      }
     });
-    setLookupStatus(`\u5df2\u6536\u5f55 ${response.entry.word}`);
-    await loadLibrary();
   } catch (error) {
     setLookupStatus(error.message || "\u67e5\u8bcd\u5931\u8d25", true);
   } finally {

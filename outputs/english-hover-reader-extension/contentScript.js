@@ -220,6 +220,9 @@ function renderWordEntry(rect, entry) {
       <button class="ehr-audio" type="button" title="\u64ad\u653e\u6807\u51c6\u53d1\u97f3" aria-label="\u64ad\u653e\u6807\u51c6\u53d1\u97f3">▶</button>
     </div>
     <div class="ehr-meaning">${escapeHtml(entry.chinese)}</div>
+    <div class="ehr-word-status ${entry.isEnglishWord ? "" : "warning"}">
+      ${escapeHtml(entry.languageNote || "")}
+    </div>
     <div class="ehr-section">
       <span>English</span>
       <p>${escapeHtml(entry.englishDefinition)}</p>
@@ -230,7 +233,7 @@ function renderWordEntry(rect, entry) {
     </div>
     <div class="ehr-foot">
       <span>\u6765\u6e90: ${escapeHtml(entry.source || "fallback")}</span>
-      <span>\u67e5\u8fc7 ${Number(entry.count || 1)} \u6b21</span>
+      <span>${entry.isEnglishWord ? `\u67e5\u8fc7 ${Number(entry.count || 1)} \u6b21` : "\u672a\u81ea\u52a8\u6536\u5f55"}</span>
     </div>
   `;
 
